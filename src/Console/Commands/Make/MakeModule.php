@@ -353,9 +353,4 @@ class MakeModule extends Command
 	{
 		$this->getOutput()->title($title);
 	}
-	
-	protected function newLine(int $count = 1)
-	{
-		$this->getOutput()->newLine($count);
-	}
 }
