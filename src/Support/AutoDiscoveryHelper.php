@@ -2,11 +2,7 @@
 
 namespace InterNACHI\Modular\Support;
 
-use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Str;
-use ReflectionClass;
-use RuntimeException;
 
 class AutoDiscoveryHelper
 {
@@ -80,6 +76,19 @@ class AutoDiscoveryHelper
 		return FinderCollection::forFiles()
 			->depth('> 2')
 			->path('src/Models')
+			->name('*.php')
+			->in($this->base_path);
+	}
+	
+	public function bladeComponentFileFinder() : FinderCollection
+	{
+		if ($this->basePathMissing()) {
+			return FinderCollection::empty();
+		}
+		
+		return FinderCollection::forFiles()
+			->depth('> 3')
+			->path('src/View/Components')
 			->name('*.php')
 			->in($this->base_path);
 	}

@@ -1,39 +1,15 @@
 <?php
 
-namespace InterNACHI\Modular\Support;
+namespace InterNACHI\Modular\Support\PhpStorm;
 
 use DOMDocument;
+use InterNACHI\Modular\Support\ModuleConfig;
 use SimpleXMLElement;
 
-class PhpStormConfigWriter
+class LaravelConfigWriter extends ConfigWriter
 {
-	/**
-	 * @var string
-	 */
-	public $last_error;
-	
-	/**
-	 * @var string
-	 */
-	protected $config_path;
-	
-	/**
-	 * @var \InterNACHI\Modular\Support\ModuleRegistry
-	 */
-	protected $module_registry;
-	
-	public function __construct($config_path, ModuleRegistry $module_registry)
+	public function write() : bool
 	{
-		$this->config_path = $config_path;
-		$this->module_registry = $module_registry;
-	}
-	
-	public function write(): bool
-	{
-		if (!$this->checkConfigFilePermissions()) {
-			return false;
-		}
-		
 		$plugin_config = $this->getNormalizedPluginConfig();
 		$template_paths = $plugin_config->xpath('//templatePath');
 		
@@ -56,19 +32,6 @@ class PhpStormConfigWriter
 			});
 		
 		return false !== file_put_contents($this->config_path, $this->formatXml($plugin_config));
-	}
-	
-	protected function formatXml(SimpleXMLElement $xml): string
-	{
-		$dom = new DOMDocument('1.0', 'UTF-8');
-		$dom->formatOutput = true;
-		$dom->preserveWhiteSpace = false;
-		$dom->loadXML($xml->asXML());
-		
-		$xml = $dom->saveXML();
-		$xml = preg_replace('~(\S)/>\s*$~m', '$1 />', $xml);
-		
-		return $xml;
 	}
 	
 	protected function getNormalizedPluginConfig(): SimpleXMLElement
@@ -100,24 +63,5 @@ class PhpStormConfigWriter
 		}
 		
 		return $config;
-	}
-	
-	protected function checkConfigFilePermissions(): bool
-	{
-		if (!is_readable($this->config_path) || !is_writable($this->config_path)) {
-			return $this->error("Unable to find or read: '{$this->config_path}'");
-		}
-		
-		if (!is_writable($this->config_path)) {
-			return $this->error("Config file is not writable: '{$this->config_path}'");
-		}
-		
-		return true;
-	}
-	
-	protected function error(string $message): bool 
-	{
-		$this->last_error = $message;
-		return false;
 	}
 }

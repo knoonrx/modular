@@ -4,8 +4,12 @@ namespace InterNACHI\Modular\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use InterNACHI\Modular\Support\FinderCollection;
 use InterNACHI\Modular\Support\ModuleRegistry;
-use InterNACHI\Modular\Support\PhpStormConfigWriter;
+use InterNACHI\Modular\Support\PhpStorm\LaravelConfigWriter;
+use InterNACHI\Modular\Support\PhpStorm\PhpFrameworkWriter;
+use InterNACHI\Modular\Support\PhpStorm\ProjectImlWriter;
+use Symfony\Component\Finder\SplFileInfo;
 
 class ModulesSync extends Command
 {
@@ -76,10 +80,17 @@ class ModulesSync extends Command
 	
 	protected function updatePhpStormConfig(): void
 	{
+		$this->updatePhpStormLaravelPlugin();
+		$this->updatePhpStormPhpConfig();
+		$this->updatePhpStormProjectIml();
+	}
+	
+	protected function updatePhpStormLaravelPlugin(): void
+	{
 		$config_path = $this->getLaravel()->basePath('.idea/laravel-plugin.xml');
-		$writer = new PhpStormConfigWriter($config_path, $this->registry);
+		$writer = new LaravelConfigWriter($config_path, $this->registry);
 		
-		if ($writer->write()) {
+		if ($writer->handle()) {
 			$this->info('Updated PhpStorm/Laravel Plugin config file...');
 		} else {
 			$this->info('Did not find/update PhpStorm/Laravel Plugin config.');
@@ -87,5 +98,49 @@ class ModulesSync extends Command
 				$this->warn($writer->last_error);
 			}
 		}
+	}
+	
+	protected function updatePhpStormPhpConfig() : void
+	{
+		$config_path = $this->getLaravel()->basePath('.idea/php.xml');
+		$writer = new PhpFrameworkWriter($config_path, $this->registry);
+		
+		if ($writer->handle()) {
+			$this->info('Updated PhpStorm library roots config file...');
+		} else {
+			$this->info('Did not find/update PhpStorm library roots config.');
+			if ($this->getOutput()->isVerbose()) {
+				$this->warn($writer->last_error);
+			}
+		}
+	}
+	
+	protected function updatePhpStormProjectIml() : void
+	{
+		$idea_directory = $this->getLaravel()->basePath('.idea/');
+		if (!$this->filesystem->isDirectory($idea_directory)) {
+			return;
+		}
+		
+		FinderCollection::forFiles()
+			->in($idea_directory)
+			->name('*.iml')
+			->first(function(SplFileInfo $file) {
+				$config_path = $file->getPathname();
+				$writer = new ProjectImlWriter($config_path, $this->registry);
+				
+				if ($writer->handle()) {
+					$this->info("Updated PhpStorm project source folders in '{$file->getBasename()}'");
+					return true;
+				}
+				
+				$this->info("Could not update PhpStorm project source folders in '{$file->getBasename()}'");
+				
+				if ($this->getOutput()->isVerbose()) {
+					$this->warn($writer->last_error);
+				}
+				
+				return false;
+			});
 	}
 }
