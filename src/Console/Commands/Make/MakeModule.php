@@ -272,7 +272,7 @@ class MakeModule extends Command
 		
 		$module_config = [
 			'type' => 'path',
-			'url' => config('app-modules.modules_directory', 'app-modules').DIRECTORY_SEPARATOR.'*',
+			'url' => config('app-modules.modules_directory', 'app-modules').'/*',
 			'options' => [
 				'symlink' => true,
 			],
