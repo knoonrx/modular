@@ -360,4 +360,15 @@ class MakeModule extends Command
 	{
 		$this->getOutput()->title($title);
 	}
+
+	/**
+	 * Write a blank line.
+	 *
+	 * @param  int  $count
+	 * @return void
+	 */
+	public function newLine($count = 1)
+	{
+		$this->output->newLine($count);
+	}
 }
