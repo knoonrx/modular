@@ -1,8 +1,6 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+This changelog follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format,
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
@@ -12,11 +10,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `php artisan modules:sync` will now update additional PhpStorm config files
 - Partial support for `--all` on `make:model`
 - Initial support for component auto-discovery
+- Switched to single `app-modules/*` composer repository rather than new repositories for each module
+- Added description field to generated `composer.json` file
+- Moved tests from `autoload-dev` to `autoload` because composer doesn't support 
+  `autoload-dev` for non-root configs
+- Added improved support for Laravel 8 factory classes  
 
 ## [1.0.1]
 
 ### Changed
 - Introduces a few improvements to the default composer.json format.
+
+## [1.0.0]
+
+### Added
+- Initial release
 
 --------
 
