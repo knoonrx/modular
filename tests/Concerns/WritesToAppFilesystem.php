@@ -33,8 +33,8 @@ trait WritesToAppFilesystem
 		
 		$stubs_directory = dirname(__FILE__, 2).'/stubs';
 		
-		$from = $this->normalizeDirectorySeparators("{$stubs_directory}/{$stub}");
-		$to = $this->normalizeDirectorySeparators("{$destination}/{$stub}");
+		$from = "{$stubs_directory}/{$stub}";
+		$to = "{$destination}/{$stub}";
 		
 		$this->filesystem()->ensureDirectoryExists($destination);
 		$this->filesystem()->copy($from, $to);

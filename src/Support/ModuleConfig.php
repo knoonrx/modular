@@ -50,7 +50,7 @@ class ModuleConfig implements Arrayable
 	
 	public function path(string $to = ''): string
 	{
-		return rtrim($this->base_path.DIRECTORY_SEPARATOR.$to, DIRECTORY_SEPARATOR);
+		return rtrim($this->base_path.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $to), DIRECTORY_SEPARATOR);
 	}
 	
 	public function toArray(): array

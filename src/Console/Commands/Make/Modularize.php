@@ -56,35 +56,40 @@ trait Modularize
 		
 		return parent::qualifyClass($name);
 	}
-	
+
 	protected function getPath($name)
 	{
 		if ($module = $this->module()) {
 			$name = Str::replaceFirst($module->namespaces->first(), '', $name);
 		}
-		
-		$path = parent::getPath($name);
-		
+
+		$path = str_replace('/', DIRECTORY_SEPARATOR, parent::getPath($name));
+
 		if ($module) {
 			// Set up our replacements as a [find -> replace] array
 			$replacements = [
 				$this->laravel->path() => $module->namespaces->keys()->first(),
-				$this->laravel->basePath('tests/Tests') => $module->path('tests'),
+				$this->laravel->basePath('tests'. DIRECTORY_SEPARATOR .'Tests') => $module->path('tests'),
 				$this->laravel->databasePath() => $module->path('database'),
 			];
-			
+
 			// Normalize all our paths for compatibility's sake
 			$normalize = function($path) {
-				return DIRECTORY_SEPARATOR.trim($path, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+				$result = trim($path, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
+				if(windows_os()) {
+					return $result;
+				}
+
+				return DIRECTORY_SEPARATOR . $result;
 			};
-			
+
 			$find = array_map($normalize, array_keys($replacements));
 			$replace = array_map($normalize, array_values($replacements));
-			
+
 			// And finally apply the replacements
 			$path = str_replace($find, $replace, $path);
 		}
-		
+
 		return $path;
 	}
 	

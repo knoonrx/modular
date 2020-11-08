@@ -28,7 +28,7 @@ class AutoDiscoveryHelperTest extends TestCase
 		$this->module1 = $this->makeModule('test-module');
 		$this->module2 = $this->makeModule('test-module-two');
 		$this->helper = new AutoDiscoveryHelper(
-			new ModuleRegistry($this->getBasePath().'/app-modules', ''),
+			new ModuleRegistry($this->getBasePath().DIRECTORY_SEPARATOR.'app-modules', ''),
 			new Filesystem()
 		);
 	}
@@ -50,7 +50,7 @@ class AutoDiscoveryHelperTest extends TestCase
 		$this->helper->commandFileFinder()->each(function(SplFileInfo $command) use (&$resolved) {
 			$resolved[] = $command->getPathname();
 		});
-		
+
 		$this->assertContains($this->module1->path('src/Console/Commands/TestCommand.php'), $resolved);
 		$this->assertContains($this->module2->path('src/Console/Commands/TestCommand.php'), $resolved);
 	}
