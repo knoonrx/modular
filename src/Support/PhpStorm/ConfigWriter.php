@@ -71,4 +71,15 @@ abstract class ConfigWriter
 		
 		return $xml;
 	}
+
+	protected function moduleDirectory(string $prefix = null) : string
+	{
+		$modules_directory = config('app-modules.modules_directory', 'app-modules');
+
+		if ($prefix) {
+			$modules_directory = "{$prefix}/{$modules_directory}";
+		}
+
+		return $modules_directory;
+	}
 }

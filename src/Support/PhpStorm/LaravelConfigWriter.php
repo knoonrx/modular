@@ -21,7 +21,7 @@ class LaravelConfigWriter extends ConfigWriter
 		}
 		
 		// Now add all modules to the config
-		$modules_directory = config('app-modules.modules_directory', 'app-modules');
+		$modules_directory = $this->moduleDirectory(config('app-modules.base_path'));
 		$list = $plugin_config->xpath('//option[@name="templatePaths"]//list')[0];
 		$this->module_registry->modules()
 			->sortBy('name')

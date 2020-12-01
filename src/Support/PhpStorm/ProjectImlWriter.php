@@ -10,7 +10,7 @@ class ProjectImlWriter extends ConfigWriter
 {
 	public function write() : bool
 	{
-		$modules_directory = config('app-modules.modules_directory', 'app-modules');
+		$modules_directory = $this->moduleDirectory(config('app-modules.base_path'));
 		
 		$patterns = $this->module_registry->modules()
 			->sortBy('name')

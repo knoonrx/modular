@@ -16,9 +16,10 @@ class PhpFrameworkWriter extends ConfigWriter
 		
 		$namespace = config('app-modules.modules_namespace', 'Modules');
 		$vendor = config('app-modules.modules_vendor') ?? Str::kebab($namespace);
+		$vendor_path = config('app-modules.vendor_path', 'vendor');
 		$module_paths = $this->module_registry->modules()
-			->map(function(ModuleConfig $module) use (&$config, $vendor) {
-				return '$PROJECT_DIR$/vendor/'.$vendor.'/'.$module->name;
+			->map(function(ModuleConfig $module) use (&$config, $vendor, $vendor_path) {
+				return "\$PROJECT_DIR\$/{$vendor_path}/{$vendor}/{$module->name}";
 			});
 		
 		$include_paths = $config->xpath('//component[@name="PhpIncludePathManager"]//include_path//path');
