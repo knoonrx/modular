@@ -87,7 +87,7 @@ class ModulesSync extends Command
 	
 	protected function updatePhpStormLaravelPlugin(): void
 	{
-		$config_path = $this->getLaravel()->basePath('.idea/laravel-plugin.xml');
+		$config_path = $this->ideaPath('.idea/laravel-plugin.xml');
 		$writer = new LaravelConfigWriter($config_path, $this->registry);
 		
 		if ($writer->handle()) {
@@ -102,7 +102,7 @@ class ModulesSync extends Command
 	
 	protected function updatePhpStormPhpConfig() : void
 	{
-		$config_path = $this->getLaravel()->basePath('.idea/php.xml');
+		$config_path = $this->ideaPath('.idea/php.xml');
 		$writer = new PhpFrameworkWriter($config_path, $this->registry);
 		
 		if ($writer->handle()) {
@@ -117,7 +117,7 @@ class ModulesSync extends Command
 	
 	protected function updatePhpStormProjectIml() : void
 	{
-		$idea_directory = $this->getLaravel()->basePath('.idea/');
+		$idea_directory = $this->ideaPath('.idea/');
 		if (!$this->filesystem->isDirectory($idea_directory)) {
 			return;
 		}
@@ -142,5 +142,19 @@ class ModulesSync extends Command
 				
 				return false;
 			});
+	}
+
+	protected function ideaPath(string $path = null) : string
+	{
+		$config_path = config('app-modules.idea_path');
+		if($config_path && file_exists($config_path)) {
+			$idea_path = $config_path;
+		} else {
+			$idea_path = $this->getLaravel()->basePath();
+		}
+
+		$idea_path = trim($idea_path, '\\/');
+
+		return realpath($idea_path) . ($path ? DIRECTORY_SEPARATOR.$path : $path);
 	}
 }
