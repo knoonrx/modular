@@ -33,7 +33,7 @@ class ModuleConfig implements Arrayable
 		
 		$namespaces = Collection::make($composer_config['autoload']['psr-4'] ?? [])
 			->mapWithKeys(function($src, $namespace) use ($base_path) {
-			    $src = str_replace('/', DIRECTORY_SEPARATOR, $src);
+				$src = str_replace('/', DIRECTORY_SEPARATOR, $src);
 				$path = $base_path.DIRECTORY_SEPARATOR.$src;
 				return [$path => $namespace];
 			});
@@ -53,6 +53,16 @@ class ModuleConfig implements Arrayable
 		return rtrim($this->base_path.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $to), DIRECTORY_SEPARATOR);
 	}
 	
+	public function namespace(): string
+	{
+		return $this->namespaces->first();
+	}
+
+	public function qualify(string $class_name): string
+	{
+		return $this->namespace().ltrim($class_name, '\\');
+	}
+
 	public function toArray(): array
 	{
 		return [
