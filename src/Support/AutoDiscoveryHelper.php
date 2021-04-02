@@ -36,7 +36,7 @@ class AutoDiscoveryHelper
 
 		return FinderCollection::forFiles()
 			->name('*.php')
-			->in($this->base_path.'/*/src/Console/Commands');
+			->in($this->base_path.$this->path('/*/src/Console/Commands'));
 	}
 
 	public function factoryDirectoryFinder(): FinderCollection
@@ -48,7 +48,7 @@ class AutoDiscoveryHelper
 		return FinderCollection::forDirectories()
 			->depth(0)
 			->name('factories')
-			->in($this->base_path.'/*/database/');
+			->in($this->base_path.$this->path('/*/database/'));
 	}
 
 	public function migrationDirectoryFinder(): FinderCollection
@@ -60,7 +60,7 @@ class AutoDiscoveryHelper
 		return FinderCollection::forDirectories()
 			->depth(0)
 			->name('migrations')
-			->in($this->base_path.'/*/database/');
+			->in($this->base_path.$this->path('/*/database/'));
 	}
 
 	public function modelFileFinder(): FinderCollection
@@ -71,7 +71,7 @@ class AutoDiscoveryHelper
 
 		return FinderCollection::forFiles()
 			->name('*.php')
-			->in($this->base_path.'/*/src/Models');
+			->in($this->base_path.$this->path('/*/src/Models'));
 	}
 
 	public function bladeComponentFileFinder() : FinderCollection
@@ -82,7 +82,7 @@ class AutoDiscoveryHelper
 
 		return FinderCollection::forFiles()
 			->name('*.php')
-			->in($this->base_path.'/*/src/View/Components');
+			->in($this->base_path.$this->path('/*/src/View/Components'));
 	}
 
 	public function routeFileFinder(): FinderCollection
@@ -94,7 +94,7 @@ class AutoDiscoveryHelper
 		return FinderCollection::forFiles()
 			->depth(0)
 			->name('*.php')
-			->in($this->base_path.'/*/routes')
+			->in($this->base_path.$this->path('/*/routes'))
 			->sortByName();
 	}
 
@@ -107,11 +107,16 @@ class AutoDiscoveryHelper
 		return FinderCollection::forDirectories()
 			->depth(0)
 			->name('views')
-			->in($this->base_path.'/*/resources/');
+			->in($this->base_path.$this->path('/*/resources/'));
 	}
 
 	protected function basePathMissing(): bool
 	{
 		return false === $this->filesystem->isDirectory($this->base_path);
+	}
+
+	protected function path(string $path): string
+	{
+		return str_replace('/', DIRECTORY_SEPARATOR, $path);
 	}
 }
