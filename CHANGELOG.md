@@ -5,6 +5,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0]
+
+### Added
+
+- Added support for `--module` in `php artisan db:seed`
+
+### Fixed
+
+- Create seeders in the correct namespace when `--module` flag is used in Laravel 8+
+- Create factories in the correct namespace when `--module` flag is used in Laravel 8+
+- Apply module namespace to models when creating a factory in a module
+
+## [1.3.1]
+
+### Fixed
+
+- Added better handling of missing directories
+
+## [1.3.0]
+
+### Added
+
+- Added support for translations in modules
+
+### Changed
+
+- Switched to `diglactic/laravel-breadcrumbs` for breadcrumbs check
+
 ## [1.2.2]
 
 ### Added
@@ -46,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 --------
 
 #### "Keep a Changelog" - Types of Changes
+
 - `Added` for new features.
 - `Changed` for changes in existing functionality.
 - `Deprecated` for soon-to-be removed features.
@@ -53,7 +82,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-[Unreleased]: https://github.com/InterNACHI/modular/compare/1.2.2...HEAD
+[Unreleased]: https://github.com/InterNACHI/modular/compare/1.4.0...HEAD
+[1.4.0]: https://github.com/InterNACHI/modular/compare/1.3.1...1.4.0
+[1.3.1]: https://github.com/InterNACHI/modular/compare/1.3.0...1.3.1
+[1.3.0]: https://github.com/InterNACHI/modular/compare/1.2.2...1.3.0
 [1.2.2]: https://github.com/InterNACHI/modular/compare/1.2.1...1.2.2
 [1.2.1]: https://github.com/InterNACHI/modular/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/InterNACHI/modular/compare/1.1.0...1.2.0

@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Console\Application as Artisan;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Auth\Access\Gate;
+use Illuminate\Contracts\Translation\Translator as TranslatorContract;
 use Illuminate\Database\Console\Migrations\MigrateMakeCommand;
 use Illuminate\Database\Eloquent\Factories\Factory as EloquentFactory;
 use Illuminate\Database\Eloquent\Factory as LegacyEloquentFactory;
@@ -13,6 +14,7 @@ use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Translation\Translator;
 use Illuminate\View\Compilers\BladeCompiler;
 use Illuminate\View\Factory as ViewFactory;
 use InterNACHI\Modular\Console\Commands\Make\MakeMigration;
@@ -47,8 +49,8 @@ class ModularServiceProvider extends ServiceProvider
 	
 	/**
 	 * This is the configured modules directory (app-modules/ by default)
-	 * 
-	 * @var string 
+	 *
+	 * @var string
 	 */
 	protected $modules_path;
 	
@@ -107,6 +109,7 @@ class ModularServiceProvider extends ServiceProvider
 		$this->bootBreadcrumbs();
 		$this->bootViews();
 		$this->bootBladeComponents();
+		$this->bootTranslations();
 	}
 	
 	protected function registry(): ModuleRegistry
@@ -134,7 +137,7 @@ class ModularServiceProvider extends ServiceProvider
 		], 'modular-config');
 	}
 	
-	protected function bootPackageCommands(): void 
+	protected function bootPackageCommands(): void
 	{
 		if (!$this->app->runningInConsole()) {
 			return;
@@ -168,27 +171,40 @@ class ModularServiceProvider extends ServiceProvider
 			$this->autoDiscoveryHelper()
 				->viewDirectoryFinder()
 				->each(function(SplFileInfo $directory) use ($view_factory) {
-					if (!$module = $this->registry()->moduleForPath($directory->getPath())) {
-						throw new RuntimeException("Unable to determine module for '{$directory->getPath()}'");
-					}
-					
+					$module = $this->registry()->moduleForPathOrFail($directory->getPath());
 					$view_factory->addNamespace($module->name, $directory->getRealPath());
 				});
 		});
 	}
 	
-	protected function bootBladeComponents() : void
+	protected function bootBladeComponents(): void
 	{
 		$this->callAfterResolving(BladeCompiler::class, function(BladeCompiler $blade) {
 			$this->autoDiscoveryHelper()
 				->bladeComponentFileFinder()
 				->each(function(SplFileInfo $component) use ($blade) {
-					if (!$module = $this->registry()->moduleForPath($component->getPath())) {
-						throw new RuntimeException("Unable to determine module for '{$component->getPath()}'");
-					}
-					
+					$module = $this->registry()->moduleForPathOrFail($component->getPath());
 					$fully_qualified_component = $this->pathToFullyQualifiedClassName($component->getPathname(), $module);
 					$blade->component($fully_qualified_component, null, $module->name);
+				});
+		});
+	}
+	
+	protected function bootTranslations(): void
+	{
+		$this->callAfterResolving('translator', function(TranslatorContract $translator) {
+			if (!$translator instanceof Translator) {
+				return;
+			}
+			
+			$this->autoDiscoveryHelper()
+				->langDirectoryFinder()
+				->each(function(SplFileInfo $directory) use ($translator) {
+					$module = $this->registry()->moduleForPathOrFail($directory->getPath());
+					$path = $directory->getRealPath();
+					
+					$translator->addNamespace($module->name, $path);
+					$translator->addJsonPath($path);
 				});
 		});
 	}
@@ -197,9 +213,9 @@ class ModularServiceProvider extends ServiceProvider
 	 * This functionality is likely to go away at some point so don't rely
 	 * on it too much. The package has been abandoned.
 	 */
-	protected function bootBreadcrumbs() : void
+	protected function bootBreadcrumbs(): void
 	{
-		$class_name = 'DaveJamesMiller\\Breadcrumbs\\BreadcrumbsManager';
+		$class_name = 'Diglactic\\Breadcrumbs\\Manager';
 		
 		if (!class_exists($class_name)) {
 			return;
@@ -216,7 +232,7 @@ class ModularServiceProvider extends ServiceProvider
 		}
 	}
 	
-	protected function registerMigrations(Migrator $migrator) : void
+	protected function registerMigrations(Migrator $migrator): void
 	{
 		$this->autoDiscoveryHelper()
 			->migrationDirectoryFinder()
@@ -225,7 +241,7 @@ class ModularServiceProvider extends ServiceProvider
 			});
 	}
 	
-	protected function registerEloquentFactories() : void
+	protected function registerEloquentFactories(): void
 	{
 		EloquentFactory::guessFactoryNamesUsing(function($model_name) {
 			// Because Factory::$namespace is protected, we need to access it via reflection.
@@ -255,7 +271,7 @@ class ModularServiceProvider extends ServiceProvider
 		});
 	}
 	
-	protected function registerLegacyFactories(LegacyEloquentFactory $factory) : void
+	protected function registerLegacyFactories(LegacyEloquentFactory $factory): void
 	{
 		$this->autoDiscoveryHelper()
 			->factoryDirectoryFinder()
@@ -264,15 +280,12 @@ class ModularServiceProvider extends ServiceProvider
 			});
 	}
 	
-	protected function registerPolicies(Gate $gate) : void
+	protected function registerPolicies(Gate $gate): void
 	{
 		$this->autoDiscoveryHelper()
 			->modelFileFinder()
 			->each(function(SplFileInfo $file) use ($gate) {
-				if (!$module = $this->registry()->moduleForPath($file->getPath())) {
-					throw new RuntimeException("Unable to determine module for '{$file->getPath()}'");
-				}
-				
+				$module = $this->registry()->moduleForPathOrFail($file->getPath());
 				$fully_qualified_model = $this->pathToFullyQualifiedClassName($file->getPathname(), $module);
 				
 				// First, check for a policy that maps to the full namespace of the model
@@ -301,10 +314,7 @@ class ModularServiceProvider extends ServiceProvider
 		$this->autoDiscoveryHelper()
 			->commandFileFinder()
 			->each(function(SplFileInfo $file) use ($artisan) {
-				if (!$module = $this->registry()->moduleForPath($file->getPath())) {
-					throw new RuntimeException("Unable to determine module for '{$file->getPath()}'");
-				}
-				
+				$module = $this->registry()->moduleForPathOrFail($file->getPath());
 				$class_name = $this->pathToFullyQualifiedClassName($file->getPathname(), $module);
 				if ($this->isInstantiableCommand($class_name)) {
 					$artisan->resolve($class_name);
@@ -319,7 +329,7 @@ class ModularServiceProvider extends ServiceProvider
 		return $this;
 	}
 	
-	protected function getModulesBasePath() : string
+	protected function getModulesBasePath(): string
 	{
 		if (null === $this->modules_path) {
 			$directory_name = $this->app->make('config')->get('app-modules.modules_directory', 'app-modules');
@@ -329,7 +339,7 @@ class ModularServiceProvider extends ServiceProvider
 		return $this->modules_path;
 	}
 	
-	protected function pathToFullyQualifiedClassName($path, ModuleConfig $module_config) : string
+	protected function pathToFullyQualifiedClassName($path, ModuleConfig $module_config): string
 	{
 		foreach ($module_config->namespaces as $namespace_path => $namespace) {
 			if (0 === strpos($path, $namespace_path)) {
@@ -341,7 +351,7 @@ class ModularServiceProvider extends ServiceProvider
 		throw new RuntimeException("Unable to infer qualified class name for '{$path}'");
 	}
 	
-	protected function formatPathAsNamespace(string $path) : string
+	protected function formatPathAsNamespace(string $path): string
 	{
 		$path = trim($path, DIRECTORY_SEPARATOR);
 		
@@ -357,7 +367,7 @@ class ModularServiceProvider extends ServiceProvider
 		);
 	}
 	
-	protected function isInstantiableCommand($command) : bool
+	protected function isInstantiableCommand($command): bool
 	{
 		return is_subclass_of($command, Command::class)
 			&& !(new ReflectionClass($command))->isAbstract();

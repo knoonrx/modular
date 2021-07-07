@@ -3,58 +3,50 @@
 namespace InterNACHI\Modular\Console\Commands\Make;
 
 use Illuminate\Support\Str;
-use InterNACHI\Modular\Support\ModuleConfig;
-use InterNACHI\Modular\Support\ModuleRegistry;
-use Symfony\Component\Console\Input\InputOption;
 
 trait Modularize
 {
-	protected function module(): ?ModuleConfig
-	{
-		return $this->getLaravel()
-			->make(ModuleRegistry::class)
-			->module($this->option('module'));
-	}
-	
-	protected function configure()
-	{
-		parent::configure();
-		
-		$this->getDefinition()->addOption(
-			new InputOption(
-				'--module',
-				null,
-				InputOption::VALUE_REQUIRED,
-				'Create this resource inside an application module'
-			)
-		);
-	}
-	
+	use \InterNACHI\Modular\Console\Commands\Modularize;
+
 	protected function getDefaultNamespace($rootNamespace)
 	{
 		$namespace = parent::getDefaultNamespace($rootNamespace);
 		$module = $this->module();
-		
+
 		if ($module && false === strpos($rootNamespace, $module->namespaces->first())) {
 			$find = rtrim($rootNamespace, '\\');
 			$replace = rtrim($module->namespaces->first(), '\\');
 			$namespace = str_replace($find, $replace, $namespace);
 		}
-		
+
 		return $namespace;
 	}
-	
+
 	protected function qualifyClass($name)
 	{
 		$name = ltrim($name, '\\/');
-		
+
 		if ($module = $this->module()) {
 			if (Str::startsWith($name, $module->namespaces->first())) {
 				return $name;
 			}
 		}
-		
+
 		return parent::qualifyClass($name);
+	}
+protected function qualifyModel(string $model)
+	{
+		if ($module = $this->module()) {
+			$model = str_replace('/', '\\', ltrim($model, '\\/'));
+
+			if (Str::startsWith($model, $module->namespace())) {
+				return $model;
+			}
+
+			return $module->qualify('Models\\'.$model);
+		}
+
+		return parent::qualifyModel($model);
 	}
 
 	protected function getPath($name)
@@ -92,14 +84,14 @@ trait Modularize
 
 		return $path;
 	}
-	
+
 	public function call($command, array $arguments = [])
 	{
 		// Pass the --module flag on to subsequent commands
 		if ($module = $this->option('module')) {
 			$arguments['--module'] = $module;
 		}
-		
+
 		return $this->runCommand($command, $arguments, $this->output);
 	}
 }

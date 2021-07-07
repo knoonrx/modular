@@ -12,7 +12,7 @@ class MakeSeederTest extends TestCase
 	use WritesToAppFilesystem;
 	use TestsMakeCommands;
 	
-	public function test_it_scaffolds_a_seeder_in_the_module_when_module_option_is_set() : void
+	public function test_it_scaffolds_a_seeder_in_the_module_when_module_option_is_set(): void
 	{
 		$command = MakeSeeder::class;
 		$arguments = ['name' => 'TestSeeder'];
@@ -23,6 +23,10 @@ class MakeSeederTest extends TestCase
 			'use Illuminate\Database\Seeder',
 			'class TestSeeder extends Seeder',
 		];
+		
+		if (version_compare($this->app->version(), '8.0.0', '>=')) {
+			$expected_substrings[] = 'namespace Modules\TestModule\Database\Seeders;';
+		}
 		
 		$this->filesystem()->deleteDirectory($this->getBasePath().$this->normalizeDirectorySeparators('database/seeds'));
 		$this->filesystem()->deleteDirectory($this->getModulePath('test-module', 'database/seeds'));
@@ -30,7 +34,7 @@ class MakeSeederTest extends TestCase
 		$this->assertModuleCommandResults($command, $arguments, $expected_path, $expected_substrings);
 	}
 	
-	public function test_it_scaffolds_a_seeder_in_the_app_when_module_option_is_missing() : void
+	public function test_it_scaffolds_a_seeder_in_the_app_when_module_option_is_missing(): void
 	{
 		$command = MakeSeeder::class;
 		$arguments = ['name' => 'TestSeeder'];
@@ -41,6 +45,10 @@ class MakeSeederTest extends TestCase
 			'use Illuminate\Database\Seeder',
 			'class TestSeeder extends Seeder',
 		];
+		
+		if (version_compare($this->app->version(), '8.0.0', '>=')) {
+			$expected_substrings[] = 'namespace Database\Seeders;';
+		}
 		
 		$this->filesystem()->deleteDirectory($this->getBasePath().$this->normalizeDirectorySeparators('database/seeds'));
 		

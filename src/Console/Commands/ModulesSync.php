@@ -100,7 +100,7 @@ class ModulesSync extends Command
 		}
 	}
 	
-	protected function updatePhpStormPhpConfig() : void
+	protected function updatePhpStormPhpConfig(): void
 	{
 		$config_path = $this->ideaPath('.idea/php.xml');
 		$writer = new PhpFrameworkWriter($config_path, $this->registry);
@@ -115,7 +115,7 @@ class ModulesSync extends Command
 		}
 	}
 	
-	protected function updatePhpStormProjectIml() : void
+	protected function updatePhpStormProjectIml(): void
 	{
 		$idea_directory = $this->ideaPath('.idea/');
 		if (!$this->filesystem->isDirectory($idea_directory)) {

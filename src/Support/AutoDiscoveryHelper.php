@@ -3,6 +3,7 @@
 namespace InterNACHI\Modular\Support;
 
 use Illuminate\Filesystem\Filesystem;
+use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 
 class AutoDiscoveryHelper
 {
@@ -30,89 +31,96 @@ class AutoDiscoveryHelper
 
 	public function commandFileFinder(): FinderCollection
 	{
-		if ($this->basePathMissing()) {
+		try {
+			return FinderCollection::forFiles()
+				->name('*.php')
+				->in($this->base_path.$this->path('/*/src/Console/Commands'));
+		} catch (DirectoryNotFoundException $exception) {
 			return FinderCollection::empty();
 		}
-
-		return FinderCollection::forFiles()
-			->name('*.php')
-			->in($this->base_path.$this->path('/*/src/Console/Commands'));
 	}
 
 	public function factoryDirectoryFinder(): FinderCollection
 	{
-		if ($this->basePathMissing()) {
+		try {
+			return FinderCollection::forDirectories()
+				->depth(0)
+				->name('factories')
+				->in($this->base_path.$this->path('/*/database/'));
+		} catch (DirectoryNotFoundException $exception) {
 			return FinderCollection::empty();
 		}
-
-		return FinderCollection::forDirectories()
-			->depth(0)
-			->name('factories')
-			->in($this->base_path.$this->path('/*/database/'));
 	}
 
 	public function migrationDirectoryFinder(): FinderCollection
 	{
-		if ($this->basePathMissing()) {
+		try {
+			return FinderCollection::forDirectories()
+				->depth(0)
+				->name('migrations')
+				->in($this->base_path.$this->path('/*/database/'));
+		} catch (DirectoryNotFoundException $exception) {
 			return FinderCollection::empty();
 		}
-
-		return FinderCollection::forDirectories()
-			->depth(0)
-			->name('migrations')
-			->in($this->base_path.$this->path('/*/database/'));
 	}
 
 	public function modelFileFinder(): FinderCollection
 	{
-		if ($this->basePathMissing()) {
+		try {
+			return FinderCollection::forFiles()
+				->name('*.php')
+				->in($this->base_path.$this->path('/*/src/Models'));
+		} catch (DirectoryNotFoundException $exception) {
 			return FinderCollection::empty();
 		}
-
-		return FinderCollection::forFiles()
-			->name('*.php')
-			->in($this->base_path.$this->path('/*/src/Models'));
 	}
 
-	public function bladeComponentFileFinder() : FinderCollection
+	public function bladeComponentFileFinder(): FinderCollection
 	{
-		if ($this->basePathMissing()) {
+		try {
+			return FinderCollection::forFiles()
+				->name('*.php')
+				->in($this->base_path.$this->path('/*/src/View/Components'));
+		} catch (DirectoryNotFoundException $exception) {
 			return FinderCollection::empty();
 		}
-
-		return FinderCollection::forFiles()
-			->name('*.php')
-			->in($this->base_path.$this->path('/*/src/View/Components'));
 	}
 
 	public function routeFileFinder(): FinderCollection
 	{
-		if ($this->basePathMissing()) {
+		try {
+			return FinderCollection::forFiles()
+				->depth(0)
+				->name('*.php')
+				->in($this->base_path.$this->path('/*/routes'))
+				->sortByName();
+		} catch (DirectoryNotFoundException $exception) {
 			return FinderCollection::empty();
 		}
-
-		return FinderCollection::forFiles()
-			->depth(0)
-			->name('*.php')
-			->in($this->base_path.$this->path('/*/routes'))
-			->sortByName();
 	}
 
 	public function viewDirectoryFinder(): FinderCollection
 	{
-		if ($this->basePathMissing()) {
+		try {
+			return FinderCollection::forDirectories()
+				->depth(0)
+				->name('views')
+				->in($this->base_path.'/*/resources/');
+		} catch (DirectoryNotFoundException $exception) {
 			return FinderCollection::empty();
 		}
-
-		return FinderCollection::forDirectories()
-			->depth(0)
-			->name('views')
-			->in($this->base_path.$this->path('/*/resources/'));
 	}
 
-	protected function basePathMissing(): bool
+	public function langDirectoryFinder(): FinderCollection
 	{
-		return false === $this->filesystem->isDirectory($this->base_path);
+		try {
+			return FinderCollection::forDirectories()
+				->depth(0)
+				->name('lang')
+				->in($this->base_path.$this->path('/*/resources/'));
+		} catch (DirectoryNotFoundException $exception) {
+			return FinderCollection::empty();
+		}
 	}
 
 	protected function path(string $path): string
