@@ -3,6 +3,7 @@
 namespace InterNACHI\Modular\Tests\Concerns;
 
 use Illuminate\Filesystem\Filesystem;
+use InterNACHI\Modular\Support\ModuleConfig;
 
 trait WritesToAppFilesystem
 {
@@ -56,7 +57,7 @@ trait WritesToAppFilesystem
 	
 	protected function getModulePath(string $module_name, string $path = '/', string $modules_root = 'app-modules'): string
 	{
-		return $this->getBasePath()
+		return ModuleConfig::normalize_separator($this->getBasePath())
 			.DIRECTORY_SEPARATOR
 			.$modules_root
 			.DIRECTORY_SEPARATOR

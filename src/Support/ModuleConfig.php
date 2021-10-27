@@ -32,9 +32,8 @@ class ModuleConfig implements Arrayable
 		$name = basename($base_path);
 		
 		$namespaces = Collection::make($composer_config['autoload']['psr-4'] ?? [])
-			->mapWithKeys(function($src, $namespace) use ($base_path) {
-				$src = str_replace('/', DIRECTORY_SEPARATOR, $src);
-				$path = $base_path.DIRECTORY_SEPARATOR.$src;
+			->mapWithKeys(function($src, $namespace) use ($base_path) {;
+				$path = $base_path.DIRECTORY_SEPARATOR.self::normalize_separator($src);
 				return [$path => $namespace];
 			});
 		
@@ -44,13 +43,22 @@ class ModuleConfig implements Arrayable
 	public function __construct($name, $base_path, Collection $namespaces = null)
 	{
 		$this->name = $name;
-		$this->base_path = $base_path;
+		$this->base_path = self::normalize_separator($base_path);
 		$this->namespaces = $namespaces ?? new Collection();
 	}
 	
 	public function path(string $to = ''): string
 	{
-		return rtrim($this->base_path.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $to), DIRECTORY_SEPARATOR);
+		return rtrim($this->base_path.DIRECTORY_SEPARATOR.self::normalize_separator($to), DIRECTORY_SEPARATOR);
+	}
+
+	/**
+	 * @param string $path
+	 * @return string
+	 */
+	static public function normalize_separator($path): string
+	{
+		return str_replace('/', DIRECTORY_SEPARATOR, $path);
 	}
 	
 	public function namespace(): string

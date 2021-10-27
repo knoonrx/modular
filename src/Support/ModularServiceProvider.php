@@ -23,6 +23,7 @@ use InterNACHI\Modular\Console\Commands\ModulesCache;
 use InterNACHI\Modular\Console\Commands\ModulesClear;
 use InterNACHI\Modular\Console\Commands\ModulesList;
 use InterNACHI\Modular\Console\Commands\ModulesSync;
+use Livewire\Livewire;
 use ReflectionClass;
 use ReflectionProperty;
 use RuntimeException;
@@ -110,6 +111,7 @@ class ModularServiceProvider extends ServiceProvider
 		$this->bootViews();
 		$this->bootBladeComponents();
 		$this->bootTranslations();
+		$this->bootLivewireComponents();
 	}
 	
 	protected function registry(): ModuleRegistry
@@ -196,19 +198,19 @@ class ModularServiceProvider extends ServiceProvider
 			if (!$translator instanceof Translator) {
 				return;
 			}
-			
+
 			$this->autoDiscoveryHelper()
 				->langDirectoryFinder()
 				->each(function(SplFileInfo $directory) use ($translator) {
 					$module = $this->registry()->moduleForPathOrFail($directory->getPath());
 					$path = $directory->getRealPath();
-					
+
 					$translator->addNamespace($module->name, $path);
 					$translator->addJsonPath($path);
 				});
 		});
 	}
-	
+
 	/**
 	 * This functionality is likely to go away at some point so don't rely
 	 * on it too much. The package has been abandoned.
@@ -231,7 +233,31 @@ class ModularServiceProvider extends ServiceProvider
 			require_once $file;
 		}
 	}
-	
+
+	protected function bootLivewireComponents(): void
+	{
+		if (!class_exists(Livewire::class)) {
+			return;
+		}
+
+		$this->autoDiscoveryHelper()
+			->livewireComponentFileFinder()
+			->each(function(SplFileInfo $component) {
+				$module = $this->registry()->moduleForPathOrFail($component->getPath());
+
+				$component_name = Str::of($component->getRelativePath())
+					->explode('/')
+					->filter()
+					->push($component->getBasename('.php'))
+					->map([Str::class, 'kebab'])
+					->implode('.');
+
+				$fully_qualified_component = $this->pathToFullyQualifiedClassName($component->getPathname(), $module);
+
+				Livewire::component("{$module->name}::{$component_name}", $fully_qualified_component);
+			});
+	}
+
 	protected function registerMigrations(Migrator $migrator): void
 	{
 		$this->autoDiscoveryHelper()

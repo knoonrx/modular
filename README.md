@@ -127,6 +127,7 @@ use all the existing tooling that you know. The commands themselves are exactly 
 same, which means you can use your [custom stubs](https://laravel.com/docs/7.x/artisan#stub-customization)
 and everything else Laravel provides:
 
+- `php artisan make:cast MyModuleCast --module=my-module`
 - `php artisan make:controller MyModuleController --module=my-module`
 - `php artisan make:command MyModuleCommand --module=my-module`
 - `php artisan make:component MyModuleComponent --module=my-module`
@@ -157,6 +158,13 @@ for your seeder within your module namespace:
 
 - `php artisan db:seed --module=my-module` will try to call `Modules\MyModule\Database\Seeders\DatabaseSeeder`
 - `php artisan db:seed --class=MySeeder --module=my-module` will try to call `Modules\MyModule\Database\Seeders\MySeeder`
+
+#### Vendor Commands
+
+We can also add the `--module` option to commands in 3rd-party packages. The first package
+that we support is Livewire. If you have Livewire installed, you can run:
+
+- `php artisan make:livewire counter --module=my-module`
 
 ## Comparison to `nwidart/laravel-modules`
 

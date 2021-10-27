@@ -105,7 +105,7 @@ class AutoDiscoveryHelper
 			return FinderCollection::forDirectories()
 				->depth(0)
 				->name('views')
-				->in($this->base_path.'/*/resources/');
+				->in($this->base_path.$this->path('/*/resources/'));
 		} catch (DirectoryNotFoundException $exception) {
 			return FinderCollection::empty();
 		}
@@ -122,6 +122,17 @@ class AutoDiscoveryHelper
 			return FinderCollection::empty();
 		}
 	}
+
+    public function livewireComponentFileFinder(): FinderCollection
+    {
+        try {
+            return FinderCollection::forFiles()
+                ->name('*.php')
+                ->in($this->base_path.$this->path('/*/src/Http/Livewire'));
+        } catch (DirectoryNotFoundException $exception) {
+            return FinderCollection::empty();
+        }
+    }
 
 	protected function path(string $path): string
 	{

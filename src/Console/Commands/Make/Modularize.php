@@ -3,11 +3,11 @@
 namespace InterNACHI\Modular\Console\Commands\Make;
 
 use Illuminate\Support\Str;
+use InterNACHI\Modular\Support\ModuleConfig;
 
 trait Modularize
 {
 	use \InterNACHI\Modular\Console\Commands\Modularize;
-
 	protected function getDefaultNamespace($rootNamespace)
 	{
 		$namespace = parent::getDefaultNamespace($rootNamespace);
@@ -34,7 +34,8 @@ trait Modularize
 
 		return parent::qualifyClass($name);
 	}
-protected function qualifyModel(string $model)
+
+	protected function qualifyModel(string $model)
 	{
 		if ($module = $this->module()) {
 			$model = str_replace('/', '\\', ltrim($model, '\\/'));
@@ -55,14 +56,14 @@ protected function qualifyModel(string $model)
 			$name = Str::replaceFirst($module->namespaces->first(), '', $name);
 		}
 
-		$path = str_replace('/', DIRECTORY_SEPARATOR, parent::getPath($name));
+		$path = ModuleConfig::normalize_separator(parent::getPath($name));
 
 		if ($module) {
 			// Set up our replacements as a [find -> replace] array
 			$replacements = [
-				$this->laravel->path() => $module->namespaces->keys()->first(),
-				$this->laravel->basePath('tests'. DIRECTORY_SEPARATOR .'Tests') => $module->path('tests'),
-				$this->laravel->databasePath() => $module->path('database'),
+				ModuleConfig::normalize_separator($this->laravel->path()) => $module->namespaces->keys()->first(),
+				ModuleConfig::normalize_separator($this->laravel->basePath('tests'. DIRECTORY_SEPARATOR .'Tests')) => $module->path('tests'),
+				ModuleConfig::normalize_separator($this->laravel->databasePath()) => $module->path('database'),
 			];
 
 			// Normalize all our paths for compatibility's sake

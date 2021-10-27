@@ -6,6 +6,7 @@ use Illuminate\Console\Application;
 use Illuminate\Console\Application as Artisan;
 use Illuminate\Support\ServiceProvider;
 use InterNACHI\Modular\Console\Commands\Database\SeedCommand;
+use InterNACHI\Modular\Console\Commands\Make\MakeCast;
 use InterNACHI\Modular\Console\Commands\Make\MakeChannel;
 use InterNACHI\Modular\Console\Commands\Make\MakeCommand;
 use InterNACHI\Modular\Console\Commands\Make\MakeComponent;
@@ -15,6 +16,7 @@ use InterNACHI\Modular\Console\Commands\Make\MakeException;
 use InterNACHI\Modular\Console\Commands\Make\MakeFactory;
 use InterNACHI\Modular\Console\Commands\Make\MakeJob;
 use InterNACHI\Modular\Console\Commands\Make\MakeListener;
+use InterNACHI\Modular\Console\Commands\Make\MakeLivewire;
 use InterNACHI\Modular\Console\Commands\Make\MakeMail;
 use InterNACHI\Modular\Console\Commands\Make\MakeMiddleware;
 use InterNACHI\Modular\Console\Commands\Make\MakeMigration;
@@ -28,10 +30,12 @@ use InterNACHI\Modular\Console\Commands\Make\MakeResource;
 use InterNACHI\Modular\Console\Commands\Make\MakeRule;
 use InterNACHI\Modular\Console\Commands\Make\MakeSeeder;
 use InterNACHI\Modular\Console\Commands\Make\MakeTest;
+use Livewire\Commands\MakeCommand as OriginalLivewireCommand;
 
 class ModularizedCommandsServiceProvider extends ServiceProvider
 {
 	protected $overrides = [
+		'command.cast.make' => MakeCast::class,
 		'command.controller.make' => MakeController::class,
 		'command.console.make' => MakeCommand::class,
 		'command.channel.make' => MakeChannel::class,
@@ -66,6 +70,14 @@ class ModularizedCommandsServiceProvider extends ServiceProvider
 			$this->app->singleton('command.migrate.make', function($app) {
 				return new MakeMigration($app['migration.creator'], $app['composer']);
 			});
+
+			// Register Livewire command only if Livewire is installed
+			if (class_exists(OriginalLivewireCommand::class)) {
+				$artisan->resolveCommands([MakeLivewire::class]);
+				$this->app->extend(OriginalLivewireCommand::class, function() {
+					return new MakeLivewire();
+				});
+			}
 		});
 	}
 }

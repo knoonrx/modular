@@ -28,8 +28,8 @@ class ModuleRegistry
 
 	public function __construct(string $modules_path, string $cache_path)
 	{
-		$this->modules_path = $modules_path;
-		$this->cache_path = $cache_path;
+		$this->modules_path = ModuleConfig::normalize_separator($modules_path);
+		$this->cache_path = ModuleConfig::normalize_separator($cache_path);
 	}
 
 	public function getModulesPath(): string
