@@ -63,7 +63,6 @@ class ModuleRegistry
 
 		throw new CannotFindModuleForPathException($path);
 	}
-
 	public function moduleForClass(string $fqcn): ?ModuleConfig
 	{
 		return $this->modules()->first(function(ModuleConfig $module) use ($fqcn) {

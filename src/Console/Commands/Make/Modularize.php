@@ -49,7 +49,6 @@ trait Modularize
 
 		return parent::qualifyModel($model);
 	}
-
 	protected function getPath($name)
 	{
 		if ($module = $this->module()) {
